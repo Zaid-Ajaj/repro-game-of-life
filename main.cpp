@@ -98,7 +98,7 @@ void show_universe (Cell universe [ROWS][COLUMNS])
 //    // pre-conditions, post-conditions, implementation
 //}
 
-int main ()
+void main ()
 {
     cout << "Please enter the name of file containing initial configuration: ";
     char filename[MAX_FILENAME_LENGTH];
