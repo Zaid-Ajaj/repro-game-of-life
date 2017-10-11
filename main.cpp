@@ -21,7 +21,7 @@ bool enter_filename (char filename [MAX_FILENAME_LENGTH])
 {
     // pre-conditions
     assert (MAX_FILENAME_LENGTH > 0);
-    char inputToken; // initial
+    char inputToken = 0; // initial
     int position = 0;
     // keep reading charecters till user presses ENTER
     while(inputToken != '\n') {
@@ -43,7 +43,7 @@ bool enter_filename (char filename [MAX_FILENAME_LENGTH])
 //  Part 2: setting the scene
 bool read_universe_file (ifstream& inputFile, Cell universe [ROWS][COLUMNS])
 {
-    char rowInput[NO_OF_COLUMNS];
+    char rowInput[NO_OF_COLUMNS + 1];
 
     if (!inputFile) {
         cout << "Unable to read the input file stream" << endl;
@@ -92,11 +92,72 @@ void show_universe (Cell universe [ROWS][COLUMNS])
     }
 }
 
+int is_alive(Cell cell) 
+{
+    return cell == Live ? 1 : 0;
+}
 //  Part 3: the next generation
-//void next_generation (Cell now [ROWS][COLUMNS], Cell next [ROWS][COLUMNS])
-//{
-//    // pre-conditions, post-conditions, implementation
-//}
+void next_generation (Cell universe [ROWS][COLUMNS], Cell next [ROWS][COLUMNS])
+{
+    // pre-conditions, post-conditions, implementation
+    for(int row = 0; row < ROWS; row++) {
+        for(int col = 0; col < COLUMNS; col++) {
+
+            bool currentCellIsEdgeCell =  row == 0 
+                                       || row == ROWS - 1
+                                       || col == 0
+                                       || col == COLUMNS - 1;
+             
+            if (currentCellIsEdgeCell) {
+                // Cells on the edges or (walls of universe) must be all DEAD!
+                next[row][col] = Dead;
+                continue;
+            }
+
+            Cell current = universe[row][col];
+            // get surrounding 8 cells
+            Cell topCenter = universe[row - 1][col];
+            Cell topRight = universe[row - 1][col + 1];
+            Cell topLeft = universe[row - 1][col - 1];
+            Cell right = universe[row][col + 1];
+            Cell left = universe[row][col - 1];
+            Cell bottomCenter = universe[row + 1][col];
+            Cell bottomRight = universe[row + 1][col - 1];
+            Cell bottomLeft = universe[row + 1][col + 1];
+
+            int aliveCount = is_alive(topCenter) + is_alive(bottomCenter)
+                           + is_alive(topRight ) + is_alive(bottomRight)
+                           + is_alive(topLeft  ) + is_alive(bottomLeft)
+                           + is_alive(right    ) + is_alive(left);
+
+            int deadCount = 8 - aliveCount;
+            
+            if (universe[row][col] == Live) {
+                if (aliveCount < 2) {
+                    // Under population :(
+                    cout << "Cell[" << row << ", " << col << "] died (under population)" << endl;
+                    next[row][col] = Dead;
+                } else if (aliveCount == 2 || aliveCount == 3) {
+                    // Still happy and rich ;-)
+                    cout << "Cell[" << row << ", " << col << "] stayed as is" << endl;
+                    next[row][col] = Live;
+                } else {
+                    cout << "Cell[" << row << ", " << col << "] died (over population)" << endl;
+                    // Over population -_-
+                    next[row][col] = Dead;
+                }
+            } else {
+                if (aliveCount == 3) {
+                    cout << "Cell[" << row << ", " << col << "] Became alive" << endl;
+                    // exactly 3? I see what you did there
+                    next[row][col] == Live;
+                } else {
+                    next[row][col] = Dead;
+                }
+            }
+        }
+    }
+}
 
 void main ()
 {
@@ -124,4 +185,8 @@ void main ()
     bool result = read_universe_file(fileInput, universe);
     cout << "Finished reading file" << endl;
     show_universe(universe);
+    Cell nextState[ROWS][COLUMNS];
+    cout << "Next state transition becomes: " << endl;
+    next_generation(universe, nextState);
+    show_universe(nextState);
 }
